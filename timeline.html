@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>멋사 호서대 14기 타임라인</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:'Noto Sans KR',sans-serif;
+  background:#0d0d0d;color:#fff;
+  overflow-x:auto;overflow-y:hidden;
+}
+.canvas{
+  width:10800px;height:1350px;
+  display:flex;position:relative;background:#0d0d0d;
+}
+
+/* 컷 가이드 */
+.cut{position:absolute;top:0;bottom:0;width:1px;background:rgba(255,0,0,0.15);z-index:999;pointer-events:none;}
+.cut::after{content:attr(data-l);position:absolute;top:6px;left:4px;font-size:10px;color:rgba(255,0,0,0.3);}
+
+/* 축 */
+.axis{
+  position:absolute;top:672px;left:80px;right:80px;height:6px;
+  background:linear-gradient(90deg,transparent 0%,#FF6B35 3%,#FFD166 18%,#06D6A0 38%,#4CC9F0 52%,#B388FF 68%,#FF6B9D 83%,#EF476F 95%,transparent 100%);
+  border-radius:3px;
+}
+
+/* 슬라이드 */
+.s{width:1080px;height:1350px;flex-shrink:0;position:relative;overflow:hidden;}
+
+/* 커버 */
+.cover{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;background:radial-gradient(ellipse at 50% 40%,#1a1a2e 0%,#0d0d0d 70%);}
+.cover .logo{font-size:90px;margin-bottom:30px;}
+.cover .yr{font-size:140px;font-weight:900;letter-spacing:-6px;background:linear-gradient(135deg,#FF6B35,#FFD166,#06D6A0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1;margin-bottom:10px;}
+.cover h1{font-size:48px;font-weight:900;line-height:1.3;margin-bottom:12px;}
+.cover .sub{font-size:24px;color:#888;font-weight:500;margin-bottom:40px;}
+.cover .leg{display:flex;gap:40px;margin-bottom:50px;}
+.cover .leg-i{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:600;}
+.cover .leg-d{width:12px;height:12px;border-radius:50%;}
+.cover .sw{font-size:15px;color:#444;letter-spacing:4px;display:flex;align-items:center;gap:10px;}
+.cover .sw .ar{display:inline-block;width:40px;height:2px;background:#444;position:relative;}
+.cover .sw .ar::after{content:'';position:absolute;right:0;top:-4px;border:5px solid transparent;border-left:6px solid #444;}
+
+/* 월 배경 */
+.mbg{position:absolute;top:545px;font-size:105px;font-weight:900;line-height:1;opacity:0.06;letter-spacing:-4px;pointer-events:none;}
+/* 월 태그 */
+.mt{position:absolute;top:636px;font-size:14px;font-weight:800;padding:4px 14px;border-radius:14px;z-index:10;}
+
+/* 노드 공통 */
+.n{position:absolute;width:230px;}
+.n .wk{font-size:11px;color:#555;font-weight:600;margin-bottom:2px;letter-spacing:0.3px;}
+.n .tt{font-size:19px;font-weight:800;line-height:1.3;margin-bottom:4px;}
+.n .ds{font-size:13px;color:#777;line-height:1.45;}
+.n .tg{display:inline-block;padding:2px 8px;border-radius:9px;font-size:10px;font-weight:700;margin-top:5px;margin-right:3px;}
+
+/* 상단 (연합 🦁) — stem이 노드 아래로 축까지 연결 */
+.n.u .stem{position:absolute;top:100%;left:9px;width:2px;height:85px;}
+.n.u .dot{position:absolute;top:calc(100% + 78px);left:2px;width:14px;height:14px;border-radius:50%;}
+.n.u .dot.big{width:18px;height:18px;top:calc(100% + 76px);left:0;}
+
+/* 하단 (교내 🏫) */
+.n.d .stem{position:absolute;top:0;left:9px;width:2px;height:28px;}
+.n.d .dot{position:absolute;top:-7px;left:2px;width:14px;height:14px;border-radius:50%;}
+.n.d .dot.big{width:18px;height:18px;top:-9px;left:0;}
+.n.d .inner{margin-top:34px;}
+
+/* 시험 기간 */
+.rest{
+  position:absolute;top:640px;height:64px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;font-weight:800;letter-spacing:1px;
+  color:#FF6B35;
+  background:rgba(255,107,53,0.08);
+  border:2px solid rgba(255,107,53,0.25);
+  z-index:5;
+  backdrop-filter:blur(2px);
+}
+
+/* 페이지 */
+.pi{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);display:flex;gap:5px;}
+.pi span{width:7px;height:7px;border-radius:50%;background:#222;}
+.pi span.on{width:22px;border-radius:4px;background:#FF6B35;}
+.sl{position:absolute;bottom:28px;left:45px;font-size:12px;color:#2a2a2a;font-weight:600;}
+
+/* 색상 */
+.c-o{color:#FF6B35;}.c-y{color:#FFD166;}.c-g{color:#06D6A0;}.c-b{color:#4CC9F0;}.c-p{color:#B388FF;}.c-pk{color:#FF6B9D;}.c-r{color:#EF476F;}
+.bg-o{background:rgba(255,107,53,0.12);color:#FF6B35;}
+.bg-y{background:rgba(255,209,102,0.12);color:#FFD166;}
+.bg-g{background:rgba(6,214,160,0.12);color:#06D6A0;}
+.bg-b{background:rgba(76,201,240,0.12);color:#4CC9F0;}
+.bg-p{background:rgba(179,136,255,0.12);color:#B388FF;}
+.bg-pk{background:rgba(255,107,157,0.12);color:#FF6B9D;}
+.bg-r{background:rgba(239,71,111,0.12);color:#EF476F;}
+</style>
+</head>
+<body>
+<div class="canvas">
+<div class="axis"></div>
+<div class="cut" style="left:1080px" data-l="✂2"></div>
+<div class="cut" style="left:2160px" data-l="✂3"></div>
+<div class="cut" style="left:3240px" data-l="✂4"></div>
+<div class="cut" style="left:4320px" data-l="✂5"></div>
+<div class="cut" style="left:5400px" data-l="✂6"></div>
+<div class="cut" style="left:6480px" data-l="✂7"></div>
+<div class="cut" style="left:7560px" data-l="✂8"></div>
+<div class="cut" style="left:8640px" data-l="✂9"></div>
+<div class="cut" style="left:9720px" data-l="✂10"></div>
+
+<!-- ====== SLIDE 1: COVER ====== -->
+<div class="s cover">
+  <div class="logo">🦁</div>
+  <div class="yr">2026</div>
+  <h1>멋쟁이사자처럼<br>호서대 14기</h1>
+  <div class="sub">연간 로드맵 · MAR — DEC</div>
+  <div class="leg">
+    <div class="leg-i"><div class="leg-d" style="background:#FFD166;"></div><span style="color:#FFD166;">위 — 🦁 연합 행사</span></div>
+    <div class="leg-i"><div class="leg-d" style="background:#4CC9F0;"></div><span style="color:#4CC9F0;">아래 — 🏫 호서대 교내</span></div>
+  </div>
+  <div class="sw">SWIPE <span class="ar"></span></div>
+  <div class="pi"><span class="on"></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+</div>
+
+<!-- ====== SLIDE 2: 3월 ====== -->
+<div class="s">
+  <div class="mbg" style="left:50px;color:#FF6B35;">MAR</div>
+  <div class="mt bg-o" style="left:50px;">03 셋업</div>
+  <!-- 🏫 교내 (하단 한 줄) -->
+  <div class="n d" style="left:50px;top:698px;">
+    <div class="dot big" style="background:#FF6B35;box-shadow:0 0 10px rgba(255,107,53,0.4);"></div>
+    <div class="stem" style="background:#FF6B35;"></div>
+    <div class="inner">
+      <div class="wk">1주 · 3/2~</div>
+      <div class="tt c-o">OT & 트랙 안내</div>
+      <div class="ds">멋사 소개 · 운영 규칙 확정</div>
+      <span class="tg bg-o">운영 가이드</span>
+    </div>
+  </div>
+  <div class="n d" style="left:290px;top:698px;">
+    <div class="dot" style="background:#FF6B35;"></div>
+    <div class="stem" style="background:#FF6B35;"></div>
+    <div class="inner">
+      <div class="wk">2주 · 3/9~</div>
+      <div class="tt c-o">MT & 아이스브레이킹</div>
+      <div class="ds">스터디 그룹 픽스</div>
+      <span class="tg bg-o">그룹 명단</span>
+    </div>
+  </div>
+  <div class="n d" style="left:530px;top:698px;">
+    <div class="dot" style="background:#FF6B35;"></div>
+    <div class="stem" style="background:#FF6B35;"></div>
+    <div class="inner">
+      <div class="wk">3주 · 3/16~</div>
+      <div class="tt c-o">협업툴 세팅</div>
+      <div class="ds">GitHub · 노션 · Figma · 디스코드</div>
+      <span class="tg bg-o">온보딩</span>
+    </div>
+  </div>
+  <div class="n d" style="left:770px;top:698px;">
+    <div class="dot" style="background:#FF6B35;"></div>
+    <div class="stem" style="background:#FF6B35;"></div>
+    <div class="inner">
+      <div class="wk">4주 · 3/23~</div>
+      <div class="tt c-o">기획 공통</div>
+      <div class="ds">IT서비스 구조 이해 (전원)</div>
+      <span class="tg bg-o">커리큘럼표</span>
+    </div>
+  </div>
+  <div class="sl">🦁 LIKELION HOSEO 14th</div>
+  <div class="pi"><span></span><span class="on"></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+</div>
+
+<!-- ====== SLIDE 3: 4월 ====== -->
+<div class="s">
+  <div class="mbg" style="left:50px;color:#FFD166;">APR</div>
+  <div class="mt bg-y" style="left:50px;">04 팀빌딩 → 사업계획서 → RISE</div>
+  <!-- 🏫 교내 (하단 한 줄) -->
+  <div class="n d" style="left:50px;top:698px;">
+    <div class="dot big" style="background:#FFD166;box-shadow:0 0 10px rgba(255,209,102,0.4);"></div>
+    <div class="stem" style="background:#FFD166;"></div>
+    <div class="inner">
+      <div class="wk">5주 · 3/30~</div>
+      <div class="tt c-y">⭐ 팀빌딩</div>
+      <div class="ds">욕심 레벨 설문 A/B/C<br>매칭 → 팀 확정</div>
+      <span class="tg bg-y">팀 확정서</span><span class="tg bg-b">PBL 1</span>
+    </div>
+  </div>
+  <div class="n d" style="left:290px;top:698px;">
+    <div class="dot" style="background:#FFD166;"></div>
+    <div class="stem" style="background:#FFD166;"></div>
+    <div class="inner">
+      <div class="wk">6주 · 4/6~</div>
+      <div class="tt c-y">아이디어 발굴</div>
+      <div class="ds">팀별 브레인스토밍</div>
+      <span class="tg bg-b">PBL 2</span>
+    </div>
+  </div>
+  <div class="n d" style="left:510px;top:698px;">
+    <div class="dot big" style="background:#FFD166;box-shadow:0 0 10px rgba(255,209,102,0.4);"></div>
+    <div class="stem" style="background:#FFD166;"></div>
+    <div class="inner">
+      <div class="wk">7주 · 4/13~</div>
+      <div class="tt c-y">⭐ 교내 아이디어톤</div>
+      <div class="ds">팀 피치 + 투표</div>
+      <span class="tg bg-y">1pager</span><span class="tg bg-b">PBL 3</span>
+    </div>
+  </div>
+  <div class="n d" style="left:740px;top:698px;">
+    <div class="dot big" style="background:#FF6B35;box-shadow:0 0 10px rgba(255,107,53,0.4);"></div>
+    <div class="stem" style="background:#FF6B35;"></div>
+    <div class="inner">
+      <div class="wk">8주 · 4/20~</div>
+      <div class="tt c-o">📄 사업계획서→RISE</div>
+      <div class="ds">창업동아리 공식 등록</div>
+      <span class="tg bg-o">RISE</span><span class="tg bg-b">PBL 4</span>
+    </div>
+  </div>
+  <div class="rest" style="left:740px;width:200px;">📝 중간고사 휴식</div>
+  <div class="sl">🦁 LIKELION HOSEO 14th</div>
+  <div class="pi"><span></span><span></span><span class="on"></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+</div>
+
+<!-- ====== SLIDE 4: 5월 ====== -->
+<div class="s">
+  <div class="mbg" style="left:50px;color:#06D6A0;">MAY</div>
+  <div class="mt bg-g" style="left:50px;">05 연합 아이디어톤 + 수렴</div>
+  <!-- 🦁 연합 (상단) -->
+  <div class="n u" style="left:290px;bottom:760px;">
+    <div class="dot big" style="background:#FFD166;box-shadow:0 0 10px rgba(255,209,102,0.4);"></div>
+    <div class="stem" style="background:#FFD166;"></div>
+    <div class="wk">10주 · 5/11~</div>
+    <div class="tt c-y">🏆 전국 멋사 아이디어톤</div>
+    <div class="ds">교내 아이디어로 전국 참가</div>
+    <span class="tg bg-y">🦁 연합</span>
+  </div>
+  <!-- 🏫 교내 (하단 한 줄) -->
+  <div class="n d" style="left:50px;top:698px;">
+    <div class="dot" style="background:#06D6A0;"></div>
+    <div class="stem" style="background:#06D6A0;"></div>
+    <div class="inner">
+      <div class="wk">9주 · 5/4~</div>
+      <div class="tt c-g">기획: BMC 작성</div>
+      <div class="ds">비즈니스 모델 캔버스</div>
+      <span class="tg bg-b">PBL 5</span>
+    </div>
+  </div>
+  <div class="n d" style="left:330px;top:698px;">
+    <div class="dot" style="background:#06D6A0;"></div>
+    <div class="stem" style="background:#06D6A0;"></div>
+    <div class="inner">
+      <div class="wk">11주 · 5/18~</div>
+      <div class="tt c-g">프로토타이핑</div>
+      <div class="ds">Figma 프로토타입</div>
+      <span class="tg bg-b">PBL 7</span>
+    </div>
+  </div>
+  <div class="n d" style="left:600px;top:698px;">
+    <div class="dot big" style="background:#06D6A0;box-shadow:0 0 10px rgba(6,214,160,0.4);"></div>
+    <div class="stem" style="background:#06D6A0;"></div>
+    <div class="inner">
+      <div class="wk">12주 · 5/25~</div>
+      <div class="tt c-g">⚠️ 수렴 데드라인</div>
+      <div class="ds">메인 아이디어 1개 수렴</div>
+      <span class="tg bg-g">최종 확정</span><span class="tg bg-b">PBL 8</span>
+    </div>
+  </div>
+  <div class="sl">🦁 LIKELION HOSEO 14th</div>
+  <div class="pi"><span></span><span></span><span></span><span class="on"></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+</div>
+
+<!-- ====== SLIDE 5: 6월 ====== -->
+<div class="s">
+  <div class="mbg" style="left:50px;color:#4CC9F0;">JUN</div>
+  <div class="mt bg-b" style="left:50px;">06 프로젝트 설계 + 킥오프</div>
+  <!-- 🏫 교내 (하단 한 줄) -->
+  <div class="n d" style="left:50px;top:698px;">
+    <div class="dot" style="background:#4CC9F0;"></div>
+    <div class="stem" style="background:#4CC9F0;"></div>
+    <div class="inner">
+      <div class="wk">13주 · 6/1~</div>
+      <div class="tt c-b">API 설계 & 협업</div>
+      <div class="ds">PBL 9 — 기술 마지막</div>
+      <span class="tg bg-b">PBL 9</span>
+    </div>
+  </div>
+  <div class="n d" style="left:310px;top:698px;">
+    <div class="dot big" style="background:#4CC9F0;box-shadow:0 0 10px rgba(76,201,240,0.4);"></div>
+    <div class="stem" style="background:#4CC9F0;"></div>
+    <div class="inner">
+      <div class="wk">14주 · 6/8~</div>
+      <div class="tt c-b">🆕 RISE 프로젝트 설계</div>
+      <div class="ds">MVP · ERD · 기술스택 · 백로그</div>
+      <span class="tg bg-o">설계</span>
+    </div>
+  </div>
+  <div class="rest" style="left:540px;width:170px;">📝 기말고사</div>
+  <div class="n d" style="left:750px;top:698px;">
+    <div class="dot big" style="background:#4CC9F0;box-shadow:0 0 10px rgba(76,201,240,0.4);"></div>
+    <div class="stem" style="background:#4CC9F0;"></div>
+    <div class="inner">
+      <div class="wk">16주 · 6/22~</div>
+      <div class="tt c-b">🚀 프로젝트 킥오프</div>
+      <div class="ds">설계 완료 → 개발 시작</div>
+      <span class="tg bg-g">Sprint #1</span>
+    </div>
+  </div>
+  <div class="sl">🦁 LIKELION HOSEO 14th</div>
+  <div class="pi"><span></span><span></span><span></span><span></span><span class="on"></span><span></span><span></span><span></span><span></span><span></span></div>
+</div>
+
+<!-- ====== SLIDE 6: 7월 ====== -->
+<div class="s">
+  <div class="mbg" style="left:50px;color:#B388FF;">JUL</div>
+  <div class="mt bg-p" style="left:50px;">07 방학 — 프로젝트 ☀️</div>
+  <!-- 🏫 교내 (하단 한 줄) -->
+  <div class="n d" style="left:50px;top:698px;">
+    <div class="dot" style="background:#B388FF;"></div>
+    <div class="stem" style="background:#B388FF;"></div>
+    <div class="inner">
+      <div class="wk">17~18주 · 7월 초</div>
+      <div class="tt c-p">스프린트 #2~#3</div>
+      <div class="ds">핵심 기능 개발 · 격주 데모</div>
+      <span class="tg bg-p">개발 집중</span>
+    </div>
+  </div>
+  <div class="n d" style="left:330px;top:698px;">
+    <div class="dot big" style="background:#B388FF;box-shadow:0 0 10px rgba(179,136,255,0.4);"></div>
+    <div class="stem" style="background:#B388FF;"></div>
+    <div class="inner">
+      <div class="wk">19주 · 7/13~</div>
+      <div class="tt c-p">⭐ 프로젝트 중간발표</div>
+      <div class="ds">데모 1차 — 흐름 완성</div>
+      <span class="tg bg-y">데모 1차</span>
+    </div>
+  </div>
+  <div class="n d" style="left:610px;top:698px;">
+    <div class="dot" style="background:#B388FF;"></div>
+    <div class="stem" style="background:#B388FF;"></div>
+    <div class="inner">
+      <div class="wk">20~21주 · 7월 말</div>
+      <div class="tt c-p">스프린트 #4~#5</div>
+      <div class="ds">기능 고도화 + 피드백</div>
+      <span class="tg bg-p">개발</span>
+    </div>
+  </div>
+  <div class="sl">🦁 LIKELION HOSEO 14th</div>
+  <div class="pi"><span></span><span></span><span></span><span></span><span></span><span class="on"></span><span></span><span></span><span></span><span></span></div>
+</div>
+
+<!-- ====== SLIDE 7: 8월 ====== -->
+<div class="s">
+  <div class="mbg" style="left:50px;color:#B388FF;">AUG</div>
+  <div class="mt bg-p" style="left:50px;">08 해커톤 + 마무리</div>
+  <!-- 🦁 연합 (상단) -->
+  <div class="n u" style="left:350px;bottom:760px;">
+    <div class="dot big" style="background:#FFD166;box-shadow:0 0 10px rgba(255,209,102,0.4);"></div>
+    <div class="stem" style="background:#FFD166;"></div>
+    <div class="wk">23주 · 8/10~</div>
+    <div class="tt c-y">🏆 전국 연합 해커톤</div>
+    <div class="ds">기존 프로젝트로 전국 참가</div>
+    <span class="tg bg-y">🦁 연합</span>
+  </div>
+  <!-- 🏫 교내 (하단 한 줄) -->
+  <div class="n d" style="left:50px;top:698px;">
+    <div class="dot" style="background:#B388FF;"></div>
+    <div class="stem" style="background:#B388FF;"></div>
+    <div class="inner">
+      <div class="wk">22주 · 8월 초</div>
+      <div class="tt c-p">해커톤 보강</div>
+      <div class="ds">프로젝트 보강</div>
+    </div>
+  </div>
+  <div class="n d" style="left:330px;top:698px;">
+    <div class="dot" style="background:#B388FF;"></div>
+    <div class="stem" style="background:#B388FF;"></div>
+    <div class="inner">
+      <div class="wk">24~25주 · 8월 말</div>
+      <div class="tt c-p">스프린트 #6~#7</div>
+      <div class="ds">안정화 + 폴리싱 · 격주 데모</div>
+      <span class="tg bg-p">마무리</span>
+    </div>
+  </div>
+  <!-- 방학 안내 -->
+  <div style="position:absolute;right:80px;top:400px;padding:16px 20px;border-radius:12px;border-left:3px solid #B388FF;background:rgba(179,136,255,0.04);max-width:260px;">
+    <div style="font-size:14px;color:#888;line-height:1.6;">☀️ 방학 기간<br><strong style="color:#B388FF;">스터디 ❌ 프로젝트만 집중</strong></div>
+  </div>
+  <div class="sl">🦁 LIKELION HOSEO 14th</div>
+  <div class="pi"><span></span><span></span><span></span><span></span><span></span><span></span><span class="on"></span><span></span><span></span><span></span></div>
+</div>
+
+<!-- ====== SLIDE 8: 9월 ====== -->
+<div class="s">
+  <div class="mbg" style="left:50px;color:#FF6B9D;">SEP</div>
+  <div class="mt bg-pk" style="left:50px;">09 마감 + 발표 준비</div>
+  <!-- 🏫 교내 (하단 한 줄) -->
+  <div class="n d" style="left:50px;top:698px;">
+    <div class="dot" style="background:#FF6B9D;"></div>
+    <div class="stem" style="background:#FF6B9D;"></div>
+    <div class="inner">
+      <div class="wk">26주 · 9/1~</div>
+      <div class="tt c-pk">기능 프리즈 + 2학기 OT</div>
+      <div class="ds">심화 스터디 시작</div>
+      <span class="tg bg-pk">프리즈</span>
+    </div>
+  </div>
+  <div class="n d" style="left:330px;top:698px;">
+    <div class="dot" style="background:#FF6B9D;"></div>
+    <div class="stem" style="background:#FF6B9D;"></div>
+    <div class="inner">
+      <div class="wk">27~28주 · 9월 중순</div>
+      <div class="tt c-pk">발표 준비</div>
+      <div class="ds">스토리라인 · 발표덱 · 데모 영상</div>
+      <span class="tg bg-pk">발표덱</span>
+    </div>
+  </div>
+  <div class="n d" style="left:620px;top:698px;">
+    <div class="dot big" style="background:#FF6B9D;box-shadow:0 0 10px rgba(255,107,157,0.4);"></div>
+    <div class="stem" style="background:#FF6B9D;"></div>
+    <div class="inner">
+      <div class="wk">29주 · 9/22~</div>
+      <div class="tt c-pk">⭐ 프로젝트 최종 마감</div>
+      <div class="ds">리허설 · 프로젝트 완성</div>
+      <span class="tg bg-g">완성!</span>
+    </div>
+  </div>
+  <div class="sl">🦁 LIKELION HOSEO 14th</div>
+  <div class="pi"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span class="on"></span><span></span><span></span></div>
+</div>
+
+<!-- ====== SLIDE 9: 10~11월 ====== -->
+<div class="s">
+  <div class="mbg" style="left:50px;color:#EF476F;">OCT–NOV</div>
+  <div class="mt bg-r" style="left:50px;">10–11 데모데이 + 해커톤</div>
+  <!-- 🦁 연합 (상단) -->
+  <div class="n u" style="left:500px;bottom:760px;">
+    <div class="dot big" style="background:#FFD166;box-shadow:0 0 10px rgba(255,209,102,0.4);"></div>
+    <div class="stem" style="background:#FFD166;"></div>
+    <div class="wk">35주 · 11/9~</div>
+    <div class="tt c-y">🏆 충남권역 연합 해커톤</div>
+    <div class="ds">권역 대학 연합 해커톤</div>
+    <span class="tg bg-y">🦁 연합</span>
+  </div>
+  <!-- 🏫 교내 (하단 한 줄) -->
+  <div class="n d" style="left:50px;top:698px;">
+    <div class="dot big" style="background:#EF476F;box-shadow:0 0 12px rgba(239,71,111,0.5);"></div>
+    <div class="stem" style="background:#EF476F;"></div>
+    <div class="inner">
+      <div class="wk">30주 · 10/5~</div>
+      <div class="tt" style="color:#EF476F;font-size:22px;">🎉 교내 데모데이</div>
+      <div class="ds">최종 발표 + 시연</div>
+      <span class="tg bg-r">DEMO DAY</span>
+    </div>
+  </div>
+  <div class="rest" style="left:280px;width:170px;">📝 중간고사</div>
+  <div class="n d" style="left:500px;top:698px;">
+    <div class="dot" style="background:#EF476F;"></div>
+    <div class="stem" style="background:#EF476F;"></div>
+    <div class="inner">
+      <div class="wk">36~37주 · 11월 중순</div>
+      <div class="tt c-r">회고 + 시즌 마무리</div>
+      <div class="ds">심화 스터디 마무리</div>
+    </div>
+  </div>
+  <div class="sl">🦁 LIKELION HOSEO 14th</div>
+  <div class="pi"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span class="on"></span><span></span></div>
+</div>
+
+<!-- ====== SLIDE 10: 12월 END ====== -->
+<div class="s" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;background:radial-gradient(ellipse at 50% 50%,#1a0a0a 0%,#0d0d0d 70%);">
+  <div class="mbg" style="left:50px;color:#EF476F;">DEC</div>
+  <div class="mt bg-r" style="left:50px;">12 마감</div>
+  <div style="font-size:100px;margin-bottom:30px;">🎉</div>
+  <div style="font-size:56px;font-weight:900;margin-bottom:16px;background:linear-gradient(135deg,#EF476F,#FF6B9D,#FFD166);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">14기 마감</div>
+  <div style="font-size:20px;color:#777;margin-bottom:50px;line-height:1.8;">
+    아카이빙 (GitHub · 노션 · Figma)<br>
+    15기 인수인계 + 14기 회고록<br><br>
+    <span style="font-size:26px;color:#aaa;">수고했다 우리 🦁</span>
+  </div>
+  <div style="display:flex;gap:36px;margin-top:20px;">
+    <div style="text-align:center;"><div style="font-size:52px;font-weight:900;color:#FF6B35;">40</div><div style="font-size:13px;color:#555;letter-spacing:2px;">WEEKS</div></div>
+    <div style="text-align:center;"><div style="font-size:52px;font-weight:900;color:#06D6A0;">3</div><div style="font-size:13px;color:#555;letter-spacing:2px;">TRACKS</div></div>
+    <div style="text-align:center;"><div style="font-size:52px;font-weight:900;color:#4CC9F0;">10</div><div style="font-size:13px;color:#555;letter-spacing:2px;">PBL</div></div>
+    <div style="text-align:center;"><div style="font-size:52px;font-weight:900;color:#EF476F;">1</div><div style="font-size:13px;color:#555;letter-spacing:2px;">PROJECT</div></div>
+  </div>
+  <div style="margin-top:60px;display:flex;gap:30px;">
+    <div style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;"><div style="width:10px;height:10px;border-radius:50%;background:#FFD166;"></div><span style="color:#FFD166;">🦁 연합 3회</span></div>
+    <div style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;"><div style="width:10px;height:10px;border-radius:50%;background:#4CC9F0;"></div><span style="color:#4CC9F0;">🏫 교내 풀시즌</span></div>
+  </div>
+  <div class="sl">🦁 LIKELION HOSEO 14th</div>
+  <div class="pi"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span class="on"></span></div>
+</div>
+
+</div>
+</body>
+</html>
